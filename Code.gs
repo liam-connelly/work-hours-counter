@@ -173,7 +173,7 @@ function startNewRow(currDate) {
   
   // GET NEXT THURSDAY @ TIME = MIDNIGHT - 1 ms
   var endPeriod = new Date(beginPeriod.getTime() - 1);
-  endPeriod.setDate(endPeriod.getDate() + 7);
+  endPeriod.setDate(endPeriod.getDate() + 6);
   
   // GET LAST FRIDAY (I.E. A WEEK AGO) @ TIME = MIDNIGHT
   var prevBeginPeriod = new Date(beginPeriod.getTime());
@@ -193,7 +193,7 @@ function startNewRow(currDate) {
   .concat(Utilities.formatDate(prevEndPeriod, timezone, "MM/dd/yy"));
   
   // IF LAST ROW IS NOT PAST 1/2 PAY PERIOD, STOP FUNCTION
-  if (sheet.getRange(lastRow,1).getValue() != prevPeriodString) retu
+  if (sheet.getRange(lastRow,1).getValue() != prevPeriodString) return
   // GET SHIFTS INFO FROM LAST 1/2 PAY PERIOD
   var shiftsInfoHalfPeriod = getShiftsInfo(prevBeginPeriod,prevEndPeriod);
   var EIRCTimeSheet = shiftsInfoHalfPeriod["EIRCTimeSheet"];
