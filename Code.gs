@@ -173,7 +173,7 @@ function startNewRow(currDate) {
   
   // GET NEXT THURSDAY @ TIME = MIDNIGHT - 1 ms
   var endPeriod = new Date(beginPeriod.getTime() - 1);
-  endPeriod.setDate(endPeriod.getDate() + 6);
+  endPeriod.setDate(endPeriod.getDate() + 7);
   
   // GET LAST FRIDAY (I.E. A WEEK AGO) @ TIME = MIDNIGHT
   var prevBeginPeriod = new Date(beginPeriod.getTime());
@@ -193,7 +193,8 @@ function startNewRow(currDate) {
   .concat(Utilities.formatDate(prevEndPeriod, timezone, "MM/dd/yy"));
   
   // IF LAST ROW IS NOT PAST 1/2 PAY PERIOD, STOP FUNCTION
-  if (sheet.getRange(lastRow,1).getValue() != prevPeriodString) return
+  if (sheet.getRange(lastRow,1).getValue() != prevPeriodString) return;
+  
   // GET SHIFTS INFO FROM LAST 1/2 PAY PERIOD
   var shiftsInfoHalfPeriod = getShiftsInfo(prevBeginPeriod,prevEndPeriod);
   var EIRCTimeSheet = shiftsInfoHalfPeriod["EIRCTimeSheet"];
@@ -439,12 +440,11 @@ function rebuildSpreadsheet() {
   // ADD 1/2 PERIOD STRING TO SHEET
   hours_sheet.getRange(2,1).setValue(firstPeriodString);
   
+  // NEEDED TO VERIFY THAT PERIOD STRING WAS ADDED TO SHEET
+  SpreadsheetApp.flush();
+  
   // ITERATE THROUGH EACH 1/2 PAY PERIOD AND CREATE ROW WITH HOURS INFO
   for (var i=1; i<dateList.length; i++) {
-    
-    if (i==15) {
-      var a = 0;
-    }
     
     startNewRow(dateList[i][0]);
     
