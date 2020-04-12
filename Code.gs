@@ -264,19 +264,19 @@ function sendSummaryEmail(currDate) {
   var endPrevWeek = new Date(beginPrevWeek.getTime() - 1);
   endPrevWeek.setDate(endPrevWeek.getDate() + 6)
   
-  // CATCH DAYLIGHT SAVINGS TIME-RELATED ISSUES -- UNNESSARY NOW
-  var prevWeekTimezoneDifference = savingsError(beginPrevWeek,endPrevWeek);
-  
-  if (prevWeekTimezoneDifference != 0) {
-    
-    beginPrevWeek = new Date(beginPrevWeek.getTime() + prevWeekTimezoneDifference * MILLIS_PER_HOUR)
-    
-  }
-  
   // GET SHIFTS INFO FROM LAST SUNDAY - LAST SATURDAY
   var shiftsInfoWeek = getShiftsInfo(beginPrevWeek,endPrevWeek);
   var EIRCHoursWeek = shiftsInfoWeek["EIRCHours"];
   var ITSHoursWeek = shiftsInfoWeek["ITSHours"];
+  
+  // GET ADDITIONAL SHIFTS INFO FROM LAST SUNDAY - LAST SATURDAY
+  var addShiftsInfoWeek = getAddShiftsInfo(beginPrevWeek,endPrevWeek);
+  var addEIRCHoursWeek = addShiftsInfoWeek["EIRCHours"];
+  var addITSHoursWeek = addShiftsInfoWeek["ITSHours"];
+  
+  // ADD SHIFTS INFO AND ADDITIONAL SHIFTS INFO
+  var totalEIRCHoursWeek = EIRCHoursWeek + addEIRCHoursWeek;
+  var totalITSHoursWeek = ITSHoursWeek + addITSHoursWeek;
   
   // FORMAT WEEK STRING
   var prevWeekString = Utilities.formatDate(beginPrevWeek, timezone, "MM/dd/yy")
@@ -290,11 +290,11 @@ function sendSummaryEmail(currDate) {
     htmlBody: ("During the previous week of ")
     .concat(prevWeekString)
     .concat(", you worked a total of <b>")
-    .concat((EIRCHoursWeek+ITSHoursWeek).toString())
+    .concat((totalEIRCHoursWeek+totalITSHoursWeek).toString())
     .concat(" hours:</b><ul><li><b>")
-    .concat(EIRCHoursWeek.toString())
+    .concat(totalEIRCHoursWeek.toString())
     .concat(" hours</b> at the EIRC lab</li><li><b>")
-    .concat(ITSHoursWeek.toString())
+    .concat(totalITSHoursWeek.toString())
     .concat(" hours</b> at ITS </li></ul>")
   });
   
