@@ -54,7 +54,7 @@ function updateHoursCount(currDate) {
   
   // GET NEXT THURSDAY @ TIME = MIDNIGHT - 1 ms
   var endPeriod = new Date(beginPeriod.getTime() - 1);
-  endPeriod.setDate(beginPeriod.getDate() + 6);
+  endPeriod.setDate(endPeriod.getDate() + 7);
   
   // GET LAST SUNDAY @ TIME = MIDNIGHT
   var beginWeek = new Date(currDateTime);
@@ -63,7 +63,7 @@ function updateHoursCount(currDate) {
   
   // GET NEXT SATURDAY @ TIME = MIDNIGHT - 1 ms
   var endWeek = new Date(beginWeek.getTime() - 1);
-  endWeek.setDate(currDate.getDate() + 7);
+  endWeek.setDate(beginWeek.getDate() + 6);
   
   // FORMAT 1/2 PAY PERIOD RANGE STRINGS
   var periodString = Utilities.formatDate(beginPeriod, timezone, "MM/dd/yy")
@@ -360,8 +360,8 @@ function rebuildSpreadsheet() {
     hours_sheet.setFrozenRows(1);
   
     // SET COLUMNS WIDTHS
-    hours_sheet.setColumnWidth(1,200);
-    hours_sheet.setColumnWidths(2,10,100);
+    hours_sheet.setColumnWidth(1,160);
+    hours_sheet.setColumnWidths(2,10,80);
     
     // SET ROW HEIGHTS
     hours_sheet.setRowHeights(1,hours_sheet.getMaxRows(),21);
