@@ -159,6 +159,9 @@ function startNewRow(currDate) {
   // GET LAST ROW
   var lastRow = sheet.getDataRange().getLastRow();
   
+  // SET CURRENT DATE TO MIDNIGHT
+  currDate.setHours(0,0,0,0)
+  
   // GET CURRENT TIME
   var currDateTime = currDate.getTime();
   var currDateDay = currDate.getDay();
