@@ -18,6 +18,7 @@ function onOpen(e) {
   
   ui.createMenu("Custom Functions")
   .addItem("Update Hours", 'onEveryHour')
+  .addItem("Rebuild Spreadsheet", 'rebuildSpreadsheet')
   .addToUi();
   
 }
@@ -268,7 +269,7 @@ function sendSummaryEmail(currDate) {
   
   // GET LAST SATURDAY @ TIME = MIDNIGHT - 1 ms
   var endPrevWeek = new Date(beginPrevWeek.getTime() - 1);
-  endPrevWeek.setDate(endPrevWeek.getDate() + 6)
+  endPrevWeek.setDate(endPrevWeek.getDate() + 7)
   
   // GET SHIFTS INFO FROM LAST SUNDAY - LAST SATURDAY
   var shiftsInfoWeek = getShiftsInfo(beginPrevWeek,endPrevWeek);
