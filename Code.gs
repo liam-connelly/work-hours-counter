@@ -146,10 +146,6 @@ function onFridayMorning() {
 // CREATES NEW ROW FOR WEEK AND FINALIZES PREVIOUS ROW INFORMATION
 function startNewRow(currDate) {
   
-  // GET SPREADSHEET CELL REFERENCES
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Hours Counter");
-  
   // GET TIMEZONE
   var timezone = Session.getScriptTimeZone();
   
@@ -362,9 +358,6 @@ function rebuildSpreadsheet() {
   
     // SET HOURS HEADER
     hours_sheet.getRange(1,1,1,11).setValues([hours_sheet_header])
-    
-    // MOVE FREEZE BAR
-    hours_sheet.setFrozenRows(1);
   
     // SET COLUMNS WIDTHS
     hours_sheet.setColumnWidth(1,160);
@@ -387,6 +380,11 @@ function rebuildSpreadsheet() {
   
     // SET HOURS HEADER COLOR
     hours_sheet.getRange(1,1,1,11).setBackground("#8989eb");
+    
+  } else {
+    
+    // UNFREEZE FIRST ROW
+    hours_sheet.setFrozenRows(0);
     
   }
   
@@ -446,6 +444,9 @@ function rebuildSpreadsheet() {
   
   // ADD 1/2 PERIOD STRING TO SHEET
   hours_sheet.getRange(2,1).setValue(firstPeriodString);
+  
+  // MOVE FREEZE BAR
+  hours_sheet.setFrozenRows(1);
   
   // NEEDED TO VERIFY THAT PERIOD STRING WAS ADDED TO SHEET
   SpreadsheetApp.flush();
