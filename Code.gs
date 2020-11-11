@@ -17,7 +17,7 @@ function onOpen(e) {
   var ui = SpreadsheetApp.getUi();
   
   ui.createMenu("Custom Functions")
-  .addItem("Update Hours", 'onEveryHour')
+  .addItem("Update Hours", 'rebuildPayPeriod')
   .addItem("Rebuild Spreadsheet", 'rebuildSpreadsheet')
   .addToUi();
   
@@ -373,11 +373,7 @@ function rebuildSpreadsheet() {
     if (hours_sheet.getMaxColumns()>12) {
       hours_sheet.deleteColumns(12, hours_sheet.getMaxColumns()-11);
     }
-  
-    // SET HOURS HEADER ROW AND TOTAL COLUMNS TO BE BOLDED TEXT
-    hours_sheet.getRange(1,1,1,11).setFontWeight("bold");
-    hours_sheet.getRange(1,9,hours_sheet.getMaxRows(),3).setFontWeight("bold");
-  
+    
     // SET HOURS HEADER COLOR
     hours_sheet.getRange(1,1,1,11).setBackground("#8989eb");
     
@@ -448,6 +444,14 @@ function rebuildSpreadsheet() {
   // MOVE FREEZE BAR
   hours_sheet.setFrozenRows(1);
   
+  // UNBOLD ALL CELLS
+  hours_sheet.getRange(1,1,hours_sheet.getMaxRows(),hours_sheet.getMaxColumns()).setFontWeight("normal");
+  
+  // SET HOURS HEADER ROW, TOTAL COLUMNS, AND DATE COLUMN TO BE BOLDED TEXT
+  hours_sheet.getRange(1,1,1,11).setFontWeight("bold");
+  hours_sheet.getRange(2,1,hours_sheet.getMaxRows(),1).setFontWeight("bold");
+  hours_sheet.getRange(1,9,hours_sheet.getMaxRows(),3).setFontWeight("bold");
+  
   // NEEDED TO VERIFY THAT PERIOD STRING WAS ADDED TO SHEET
   SpreadsheetApp.flush();
   
@@ -474,6 +478,88 @@ function rebuildSpreadsheet() {
   // BRING HOURS SHEET TO FRONT
   ss.setActiveSheet(hours_sheet);
   ss.moveActiveSheet(1)
+  
+}
+
+// REBUILD JUST CURRENT PAY PERIOD (1 OR 2 ROWS)
+
+function rebuildPayPeriod() {
+  
+  // GET SPREADSHEET CELL REFERENCES
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var all_sheets = ss.getSheets();
+  var hours_sheet = ss.getSheetByName("Hours Counter");
+  var add_shifts_sheet = ss.getSheetByName("Additional Entries");
+  
+  // GET LAST ROW
+  var lastRow = hours_sheet.getDataRange().getLastRow();
+  
+  // GET TIMEZONE
+  var timezone = Session.getScriptTimeZone();
+  
+  // GET CURRENT TIME
+  var currDate = new Date();
+  var currDateTime = currDate.getTime();
+  var currDateDay = currDate.getDay();
+  var currDateHour = currDate.getUTCHours() - currDate.getTimezoneOffset()/60;
+  
+  // GET MOST RECENT FRIDAY @ TIME = MIDNIGHT
+  var beginPeriod = new Date(currDateTime);
+  beginPeriod.setDate(currDate.getDate() - mod((currDateDay + 2),7));
+  beginPeriod.setHours(0,0,0,0);
+  
+  // GET NEXT THURSDAY @ TIME = MIDNIGHT - 1 ms
+  var endPeriod = new Date(beginPeriod.getTime() - 1);
+  endPeriod.setDate(beginPeriod.getDate() + 6);
+  
+  // GET LAST FRIDAY (I.E. A WEEK AGO) @ TIME = MIDNIGHT
+  var prevBeginPeriod = new Date(beginPeriod.getTime());
+  prevBeginPeriod.setDate(prevBeginPeriod.getDate() - 7);
+  
+  // GET LAST LAST THURSDAY (I.E. 8 DAYS AGO) @ TIME = MIDNIGHT - 1 ms
+  var prevEndPeriod = new Date(endPeriod.getTime());
+  prevEndPeriod.setDate(endPeriod.getDate() - 7);
+  
+  // CREATE CURRENT 1/2 PAY PERIOD STRING
+  var periodString = Utilities.formatDate(beginPeriod, timezone, "MM/dd/yy")
+  .concat(" - ")
+  .concat(Utilities.formatDate(endPeriod, timezone, "MM/dd/yy"));
+  
+  // CREATE PREVIOUS 1/2 PAY PERIOD STRING
+  var prevPeriodString = Utilities.formatDate(prevBeginPeriod, timezone, "MM/dd/yy")
+  .concat(" - ")
+  .concat(Utilities.formatDate(prevEndPeriod, timezone, "MM/dd/yy"));
+  
+  // UPDATE HOURS OF CURRENT 1/2 PAY PERIOD 
+  updateHoursCount(currDate);
+  
+  if (!getRowAltColor(prevPeriodString)) {
+    
+    // IF ROW IS INCORRECT, STOP FUNCTION
+    if (hours_sheet.getRange(lastRow-1,1).getValue() != prevPeriodString) return;
+  
+    // GET SHIFTS INFO FROM LAST LAST THURSDAY - LAST FRIDAY
+    var prevShiftsInfoHalfPeriod = getShiftsInfo(prevBeginPeriod,prevEndPeriod);
+    var prevEIRCTimeSheet = prevShiftsInfoHalfPeriod["EIRCTimeSheet"];
+    var prevEIRCHoursHalfPeriod = prevShiftsInfoHalfPeriod["EIRCHours"];
+    var prevITSHoursHalfPeriod = prevShiftsInfoHalfPeriod["ITSHours"];
+  
+    // GET ADDITIONAL SHIFTS INFO FROM LAST THURSDAY - TODAY
+    var prevAddShiftsInfoHalfPeriod = getAddShiftsInfo(beginPeriod,currDate);
+    var prevAddEIRCTimeSheet = prevAddShiftsInfoHalfPeriod["EIRCTimeSheet"];
+    var prevAddEIRCHoursHalfPeriod = prevAddShiftsInfoHalfPeriod["EIRCHours"];
+    var prevAddITSHoursHalfPeriod = prevAddShiftsInfoHalfPeriod["ITSHours"];
+  
+    // FORMAT ROW FOR PREVIOUS 1/2 PAY PERIOD
+    var prevSheetRow = [prevPeriodString].concat(addElements(prevEIRCTimeSheet,prevAddEIRCTimeSheet))
+    .concat(prevEIRCHoursHalfPeriod+prevAddEIRCHoursHalfPeriod)
+    .concat(prevITSHoursHalfPeriod+prevAddITSHoursHalfPeriod)
+    .concat(prevEIRCHoursHalfPeriod+prevAddEIRCHoursHalfPeriod+prevITSHoursHalfPeriod+prevAddITSHoursHalfPeriod);
+  
+    // UPDATE ROW ON SHEET
+    hours_sheet.getRange(lastRow-1,1,1,prevSheetRow.length).setValues([prevSheetRow]);
+    
+  }
   
 }
 
