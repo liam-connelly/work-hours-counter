@@ -482,7 +482,6 @@ function rebuildSpreadsheet() {
 }
 
 // REBUILD JUST CURRENT PAY PERIOD (1 OR 2 ROWS)
-
 function rebuildPayPeriod() {
   
   // GET SPREADSHEET CELL REFERENCES
@@ -544,8 +543,8 @@ function rebuildPayPeriod() {
     var prevEIRCHoursHalfPeriod = prevShiftsInfoHalfPeriod["EIRCHours"];
     var prevITSHoursHalfPeriod = prevShiftsInfoHalfPeriod["ITSHours"];
   
-    // GET ADDITIONAL SHIFTS INFO FROM LAST THURSDAY - TODAY
-    var prevAddShiftsInfoHalfPeriod = getAddShiftsInfo(beginPeriod,currDate);
+    // GET ADDITIONAL SHIFTS INFO FROM LAST THURSDAY - LAST FRIDAY
+    var prevAddShiftsInfoHalfPeriod = getAddShiftsInfo(prevBeginPeriod,prevEndPeriod);
     var prevAddEIRCTimeSheet = prevAddShiftsInfoHalfPeriod["EIRCTimeSheet"];
     var prevAddEIRCHoursHalfPeriod = prevAddShiftsInfoHalfPeriod["EIRCHours"];
     var prevAddITSHoursHalfPeriod = prevAddShiftsInfoHalfPeriod["ITSHours"];
