@@ -8,8 +8,9 @@ var MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
 var MAX_HOURS_PER_WEEK = 40;
 var WARNING_HOURS = 8;
 var USER_EMAIL = "liam.connelly@uconn.edu";
-var FIRST_PAY_PERIOD = "01/18/2018";
+var FIRST_PAY_PERIOD = "01/19/2018";
 var FIRST_LISTED_PAY_PERIOD = "07/19/2019";
+var LAST_PAY_PERIOD = "";
 
 // ADD CUSTOM MENU
 function onOpen(e) {
@@ -52,7 +53,7 @@ function updateHoursCount(currDate) {
   var beginPeriod = new Date(currDateTime);
   beginPeriod.setDate(currDate.getDate() - mod((currDateDay + 2),7));
   beginPeriod.setHours(0,0,0,0);
-  
+
   // GET NEXT THURSDAY @ TIME = MIDNIGHT - 1 ms
   var endPeriod = new Date(beginPeriod.getTime() - 1);
   endPeriod.setDate(endPeriod.getDate() + 7);
@@ -65,6 +66,21 @@ function updateHoursCount(currDate) {
   // GET NEXT SATURDAY @ TIME = MIDNIGHT - 1 ms
   var endWeek = new Date(beginWeek.getTime() - 1);
   endWeek.setDate(beginWeek.getDate() + 6);
+
+  if (LAST_PAY_PERIOD.length) {
+
+    // GET BEGIN DATE OF LAST 1/2 PAY PERIOD
+    var lastBeginPeriod = new Date(LAST_PAY_PERIOD);
+    lastBeginPeriod.setDate(lastBeginPeriod.getDate() + 7);
+
+    // GET END DATE OF LAST 1/2 PAY PERIOD
+    var lastEndPeriod = new Date(lastBeginPeriod.getTime()-1);
+    lastEndPeriod.setDate(lastEndPeriod.getDate() + 7)
+
+    // IF CURRENT TIME IS PAST LAST PAY PERIOD, BREAK
+    if (currDateTime > lastEndPeriod.getTime()) return;
+
+  }
   
   // FORMAT 1/2 PAY PERIOD RANGE STRINGS
   var periodString = Utilities.formatDate(beginPeriod, timezone, "MM/dd/yy")
@@ -182,6 +198,21 @@ function startNewRow(currDate) {
   // GET LAST LAST THURSDAY (I.E. 8 DAYS AGO) @ TIME = MIDNIGHT - 1 ms
   var prevEndPeriod = new Date(endPeriod.getTime());
   prevEndPeriod.setDate(endPeriod.getDate() - 7);
+
+  if (LAST_PAY_PERIOD.length) {
+
+    // GET BEGIN DATE OF LAST 1/2 PAY PERIOD
+    var lastBeginPeriod = new Date(LAST_PAY_PERIOD);
+    lastBeginPeriod.setDate(lastBeginPeriod.getDate() + 7);
+
+    // GET END DATE OF LAST 1/2 PAY PERIOD
+    var lastEndPeriod = new Date(lastBeginPeriod.getTime()-1);
+    lastEndPeriod.setDate(lastEndPeriod.getDate() + 7)
+
+    // IF CURRENT TIME IS PAST LAST PAY PERIOD, BREAK
+    if (currDateTime > lastEndPeriod.getTime()) return;
+
+  }
   
   // FORMAT 1/2 PAY PERIOD RANGE STRINGS
   var periodString = Utilities.formatDate(beginPeriod, timezone, "MM/dd/yy")
@@ -234,9 +265,9 @@ function onSundayMorning() {
 function sendSummaryEmail(currDate) {
   
   if (!currDate) {
-    var currDate = new Date();
+    currDate = new Date();
   }
-  
+
   // GET SPREADSHEET CELL REFERENCES
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName("Hours Counter");
@@ -266,6 +297,21 @@ function sendSummaryEmail(currDate) {
   // GET LAST SATURDAY @ TIME = MIDNIGHT - 1 ms
   var endPrevWeek = new Date(beginPrevWeek.getTime() - 1);
   endPrevWeek.setDate(endPrevWeek.getDate() + 7)
+
+  if (LAST_PAY_PERIOD.length) {
+
+    // GET BEGIN DATE OF LAST 1/2 PAY PERIOD
+    var lastBeginPeriod = new Date(LAST_PAY_PERIOD);
+    lastBeginPeriod.setDate(lastBeginPeriod.getDate() + 7);
+
+    // GET END DATE OF LAST 1/2 PAY PERIOD
+    var lastEndPeriod = new Date(lastBeginPeriod.getTime()-1);
+    lastEndPeriod.setDate(lastEndPeriod.getDate() + 7)
+
+    // IF CURRENT TIME IS PAST LAST PAY PERIOD, BREAK
+    if (currDate.getTime() > lastEndPeriod.getTime()) return;
+
+  }
   
   // GET SHIFTS INFO FROM LAST SUNDAY - LAST SATURDAY
   var shiftsInfoWeek = getShiftsInfo(beginPrevWeek,endPrevWeek);
@@ -329,6 +375,24 @@ function rebuildSpreadsheet() {
   // GET NEXT THURSDAY @ TIME = MIDNIGHT - 1 ms
   var endPeriod = new Date(beginPeriod.getTime() - 1);
   endPeriod.setDate(beginPeriod.getDate() + 6);
+
+  if (LAST_PAY_PERIOD.length) {
+
+    // GET BEGIN DATE OF LAST 1/2 PAY PERIOD
+    var lastBeginPeriod = new Date(LAST_PAY_PERIOD);
+    lastBeginPeriod.setDate(lastBeginPeriod.getDate() + 7);
+
+    // GET END DATE OF LAST 1/2 PAY PERIOD
+    var lastEndPeriod = new Date(lastBeginPeriod.getTime()-1);
+    lastEndPeriod.setDate(lastEndPeriod.getDate() + 7)
+
+    // IF CURRENT DATE IS PAST LAST 1/2 PAY PERIOD, ADJUST
+    if (currDateTime > lastBeginPeriod.getTime()) {
+      beginPeriod = lastBeginPeriod;
+      endPeriod = lastEndPeriod;
+    }
+
+  }
   
   // GET LAST SUNDAY @ TIME = MIDNIGHT
   var beginWeek = new Date(currDateTime);
@@ -463,7 +527,7 @@ function rebuildSpreadsheet() {
   }
   
   // UPDATE HOURS OF FINAL 1/2 PAY PERIOD TO CURRENT DATE
-  updateHoursCount(currDate);
+  updateHoursCount(endPeriod);
   
   // REMOVE ANY OTHER SHEETS
   for (var i=0; i<all_sheets.length; i++) {
@@ -530,9 +594,9 @@ function rebuildPayPeriod() {
   .concat(Utilities.formatDate(prevEndPeriod, timezone, "MM/dd/yy"));
   
   // UPDATE HOURS OF CURRENT 1/2 PAY PERIOD 
-  updateHoursCount(currDate);
+  updateHoursCount(endPeriod);
   
-  if (!getRowAltColor(prevPeriodString)) {
+  if (getRowAltColor(prevPeriodString)) {
     
     // IF ROW IS INCORRECT, STOP FUNCTION
     if (hours_sheet.getRange(lastRow-1,1).getValue() != prevPeriodString) return;
