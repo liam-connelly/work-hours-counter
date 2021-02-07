@@ -9,8 +9,8 @@ var MAX_HOURS_PER_WEEK = 40;
 var WARNING_HOURS = 8;
 var USER_EMAIL = "liam.connelly@uconn.edu";
 var FIRST_PAY_PERIOD = "01/19/2018";
-var FIRST_LISTED_PAY_PERIOD = "07/19/2019";
-var LAST_PAY_PERIOD = "";
+var FIRST_LISTED_PAY_PERIOD = "06/07/2019";
+var LAST_PAY_PERIOD = "01/15/2021";
 
 // ADD CUSTOM MENU
 function onOpen(e) {
@@ -796,13 +796,13 @@ function getRowAltColor(row) {
   endPeriod = fixYear(endPeriod);
   
   // FIND WEEKS SINCE FIRST PAY PERIOD
-  var weeksSince = (endPeriod.getTime() - new Date(FIRST_PAY_PERIOD).getTime()) / MILLIS_PER_WEEK;
+  var weeksSince = (endPeriod.getTime() - new Date(FIRST_LISTED_PAY_PERIOD).getTime()) / MILLIS_PER_WEEK;
   
   // IF UNEXPECTED RESULT, STOP FUNCTION
   if (Math.abs(weeksSince - Math.round(weeksSince))>.2) return -1; else weeksSince = Math.round(weeksSince);
   
   // RETURN 0 OR 1 BASED ON PAY PERIOD NUMBER, ALTERNATING
-  return mod(Math.ceil(weeksSince/2),2);
+  return mod(Math.ceil(weeksSince/2)+1,2);
   
 }
 
